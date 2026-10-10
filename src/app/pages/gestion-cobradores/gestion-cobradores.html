@@ -1,0 +1,183 @@
+<div class="contenido-modulo">
+  <p *ngIf="mensaje" class="alerta exito">{{ mensaje }}</p>
+  <p *ngIf="error" class="alerta error">{{ error }}</p>
+
+  <!-- FORMULARIO -->
+  <section class="tarjeta formulario">
+    <h3>{{ idEditando !== null ? 'Editar datos del cobrador' : 'Registrar nuevo cobrador' }}</h3>
+
+    <form (ngSubmit)="guardar()">
+      <div class="campos">
+        <div class="campo">
+          <label for="primerNombre">Primer nombre *</label>
+          <input
+            id="primerNombre"
+            name="primerNombre"
+            [(ngModel)]="formulario.primer_nombre"
+            required
+            maxlength="100">
+        </div>
+
+        <div class="campo">
+          <label for="segundoNombre">Segundo nombre</label>
+          <input
+            id="segundoNombre"
+            name="segundoNombre"
+            [(ngModel)]="formulario.segundo_nombre"
+            maxlength="100">
+        </div>
+
+        <div class="campo">
+          <label for="primerApellido">Primer apellido *</label>
+          <input
+            id="primerApellido"
+            name="primerApellido"
+            [(ngModel)]="formulario.primer_apellido"
+            required
+            maxlength="100">
+        </div>
+
+        <div class="campo">
+          <label for="segundoApellido">Segundo apellido</label>
+          <input
+            id="segundoApellido"
+            name="segundoApellido"
+            [(ngModel)]="formulario.segundo_apellido"
+            maxlength="100">
+        </div>
+
+        <div class="campo">
+          <label for="telefono">Teléfono</label>
+          <input
+            id="telefono"
+            name="telefono"
+            type="tel"
+            [(ngModel)]="formulario.telefono"
+            maxlength="30">
+        </div>
+
+        <!-- Credenciales de acceso (Solo visibles al crear un nuevo cobrador) -->
+        <ng-container *ngIf="idEditando === null">
+          <div class="campo">
+            <label for="email">Correo electrónico (usuario) *</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              [(ngModel)]="formulario.email"
+              required
+              placeholder="cobrador@ejemplo.com">
+          </div>
+
+          <div class="campo">
+            <label for="password">Contraseña inicial *</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              [(ngModel)]="formulario.password"
+              required
+              minlength="6"
+              placeholder="Mínimo 6 caracteres">
+          </div>
+        </ng-container>
+      </div>
+
+      <div class="acciones-formulario">
+        <button type="submit" class="btn-principal" [disabled]="guardando">
+          {{ guardando
+            ? 'Guardando...'
+            : idEditando !== null
+              ? 'Guardar cambios'
+              : 'Registrar cobrador' }}
+        </button>
+
+        <button
+          *ngIf="idEditando !== null"
+          type="button"
+          class="btn-secundario"
+          (click)="cancelarEdicion()"
+          [disabled]="guardando">
+          Cancelar
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <!-- TABLA DE COBRADORES -->
+  <section class="tarjeta listado">
+    <div class="herramientas">
+      <input
+        type="search"
+        placeholder="Buscar por nombre o teléfono..."
+        [(ngModel)]="filtro"
+        name="filtro">
+
+      <button
+        type="button"
+        class="btn-secundario"
+        (click)="cargarCobradores()"
+        [disabled]="cargando">
+        Actualizar
+      </button>
+    </div>
+
+    <p *ngIf="cargando">Cargando cobradores...</p>
+
+    <div class="tabla-contenedor" *ngIf="!cargando">
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Teléfono</th>
+            <th>Rol</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let cobrador of cobradoresFiltrados">
+            <td>
+              <strong>
+                {{ cobrador.primer_nombre }}
+                {{ cobrador.segundo_nombre || '' }}
+                {{ cobrador.primer_apellido }}
+                {{ cobrador.segundo_apellido || '' }}
+              </strong>
+            </td>
+            <td>{{ cobrador.telefono || '—' }}</td>
+            <td>{{ cobrador.rol }}</td>
+            <td>
+              <span
+                class="estado"
+                [class.activo]="cobrador.activo"
+                [class.inactivo]="!cobrador.activo">
+                {{ cobrador.activo ? 'Activo' : 'Inactivo' }}
+              </span>
+            </td>
+            <td>
+              <div class="acciones-tabla">
+                <button
+                  type="button"
+                  class="btn-editar"
+                  (click)="editar(cobrador)">
+                  Editar
+                </button>
+
+                <button
+                  type="button"
+                  class="btn-estado"
+                  (click)="cambiarEstado(cobrador)">
+                  {{ cobrador.activo ? 'Desactivar' : 'Activar' }}
+                </button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="cobradoresFiltrados.length === 0">
+            <td colspan="5" class="vacio">No hay cobradores registrados.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

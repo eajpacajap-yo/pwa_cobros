@@ -1,0 +1,53 @@
+<main class="pagina-login">
+  <section class="tarjeta-login">
+    <div class="encabezado">
+      <h1>Plaza Llanos del Pinal</h1>
+      <p>Sistema de control de cobros</p>
+    </div>
+
+    <form (ngSubmit)="iniciarSesion()" #formulario="ngForm">
+      <!-- CORREO ELECTRÓNICO -->
+      <label for="correo">Correo electrónico</label>
+      <input
+        id="correo"
+        type="email"
+        name="correo"
+        [(ngModel)]="correo"
+        placeholder="usuario@correo.com"
+        autocomplete="username"
+        required
+      />
+
+      <!-- CONTRASEÑA -->
+      <label for="contrasena">Contraseña</label>
+      <input
+        id="contrasena"
+        type="password"
+        name="contrasena"
+        [(ngModel)]="contrasena"
+        placeholder="Ingresa tu contraseña"
+        autocomplete="current-password"
+        required
+      />
+
+      <!-- ENLACE UBICADO ABAJO DEL INPUT -->
+      <div class="olvido-contenedor">
+        <button type="button" class="enlace-olvido" tabindex="-1">
+          ¿Olvidaste tu contraseña?
+        </button>
+      </div>
+
+      <p class="error" *ngIf="mensajeError">
+        {{ mensajeError }}
+      </p>
+
+      <button type="submit" [disabled]="cargando || formulario.invalid">
+        {{ cargando ? 'Ingresando...' : 'Iniciar sesión' }}
+      </button>
+    </form>
+
+    <footer>
+      <small>Acceso autorizado al personal de la plaza</small>
+    </footer>
+  </section>
+</main>

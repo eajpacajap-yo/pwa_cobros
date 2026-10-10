@@ -1,0 +1,156 @@
+
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.pagina-login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: #f3f5f2;
+}
+
+.tarjeta-login {
+  width: 100%;
+  max-width: 420px;
+  padding: 32px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+.encabezado {
+  text-align: center;
+  margin-bottom: 28px;
+
+  h1 {
+    margin-bottom: 8px;
+    color: #245c43;
+    font-size: 26px;
+  }
+
+  p {
+    margin: 0;
+    color: #647067;
+  }
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+label {
+  margin-top: 8px;
+  font-weight: 600;
+  color: #26372e;
+}
+
+input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid #ccd5ce;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+button {
+  margin-top: 16px;
+  padding: 13px;
+  border: none;
+  border-radius: 8px;
+  background: #245c43;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.error {
+  color: #b42318;
+  font-size: 14px;
+}
+
+footer {
+  margin-top: 24px;
+  text-align: center;
+  color: #647067;
+}
+
+.fila-etiqueta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 14px; /* Ajusta según el espaciado que ya tengas entre campos */
+  margin-bottom: 6px;
+
+  label {
+    margin: 0; /* Evita márgenes dobles */
+  }
+
+}
+/* Contenedor del enlace debajo del input de contraseña */
+.olvido-contenedor {
+  display: flex;
+  justify-content: flex-end; /* Alineado a la derecha */
+  margin-top: -6px;          /* Lo acerca al input de arriba */
+  margin-bottom: 18px;       /* Da espacio hacia el botón de iniciar sesión */
+
+  .enlace-olvido {
+    background: transparent;
+    border: none;
+    padding: 0;
+    color: #00875a;          /* Verde institucional */
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: default;         /* Solo visual por ahora */
+    text-decoration: none;
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: #006644;
+      text-decoration: underline;
+    }
+  }
+}
+
+/* Estado habilitado y deshabilitado del botón */
+button[type="submit"] {
+  width: 100%;
+  background-color: #00875a;
+  color: #ffffff !important;
+  border: none;
+  padding: 11px 0;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(0, 135, 90, 0.28);
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background-color: #006644;
+    box-shadow: 0 4px 12px rgba(0, 135, 90, 0.38);
+    transform: translateY(-1px);
+  }
+
+  /* Cuando los campos están vacíos o inválidos */
+  &:disabled {
+    background-color: #a7f3d0 !important; /* Verde claro atenuado */
+    color: #065f46 !important;            /* Texto verde oscuro para no perder legibilidad */
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+    opacity: 0.75;
+  }
+}

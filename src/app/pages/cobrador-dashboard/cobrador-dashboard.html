@@ -1,0 +1,234 @@
+<main class="panel">
+  <header class="encabezado">
+    <div>
+      <h1>Control de cobros</h1>
+      <p>Plaza Llanos del Pinal</p>
+    </div>
+
+    <button
+      type="button"
+      class="btn-salir"
+      (click)="cerrarSesion()">
+      Cerrar sesión
+    </button>
+  </header>
+
+  <p *ngIf="cargando" class="mensaje">
+  Cargando puestos y días de plaza...
+</p>
+<p>
+  Puestos recibidos: {{ puestos.length }}
+</p>
+
+  <section *ngIf="!cargando">
+    <div class="selector-dia">
+      <label for="diaPlaza">Día de plaza</label>
+
+      <select
+        id="diaPlaza"
+        name="diaPlaza"
+        [(ngModel)]="diaSeleccionadoId"
+        (ngModelChange)="alCambiarDia()">
+
+        <option
+          *ngFor="let dia of diasPlaza"
+          [ngValue]="dia.id">
+          {{ formatearFecha(dia.fecha) }}
+        </option>
+      </select>
+
+      <p *ngIf="mensajeDia" class="error">
+        {{ mensajeDia }}
+      </p>
+    </div>
+
+    <div class="resumen">
+      <div>
+        <span>Puestos asignados</span>
+        <strong>{{ puestos.length }}</strong>
+      </div>
+
+      <div>
+        <span>Registrados</span>
+        <strong>{{ contarRegistrados() }}</strong>
+      </div>
+
+      <div>
+        <span>Pendientes</span>
+        <strong>{{ puestos.length - contarRegistrados() }}</strong>
+      </div>
+    </div>
+
+    <p *ngIf="puestos.length === 0 && !mensajeError">
+      No tienes puestos asignados actualmente.
+    </p>
+    <div class="lista-puestos">
+      <article
+        class="tarjeta-puesto"
+        *ngFor="let puesto of puestos">
+
+        <div class="puesto-cabecera">
+          <span class="numero">
+            Puesto {{ puesto.numero }}
+          </span>
+
+          <span
+            class="estado"
+            [class.estado-cobrado]="cobrosPorPuesto[puesto.id]?.estado === 'COBRADO'"
+            [class.estado-ausente]="cobrosPorPuesto[puesto.id]?.estado === 'NO_LLEGO'">
+
+            {{
+              cobrosPorPuesto[puesto.id]?.estado === 'COBRADO'
+                ? 'Cobrado'
+                : cobrosPorPuesto[puesto.id]?.estado === 'NO_LLEGO'
+                  ? 'Vendedor ausente'
+                  : 'Pendiente'
+            }}
+          </span>
+        </div>
+
+        <h2>
+          {{ puesto.vendedores.primer_nombre }}
+          {{ puesto.vendedores.primer_apellido }}
+        </h2>
+
+        <p class="tipo-puesto">
+          {{ puesto.tipos_puesto.nombre }}
+        </p>
+
+        <p *ngIf="puesto.descripcion">
+          {{ puesto.descripcion }}
+        </p>
+
+        <div class="tarifa">
+          <span>Tarifa establecida</span>
+          <strong>
+            {{ puesto.tipos_puesto.precio | currency:'GTQ':'Q':'1.2-2' }}
+          </strong>
+        </div>
+
+        <div
+          *ngIf="cobrosPorPuesto[puesto.id] as cobro"
+          class="resultado-registrado">
+
+          <p *ngIf="cobro.estado === 'COBRADO'">
+            <strong>Pago registrado</strong>
+          </p>
+
+          <p *ngIf="cobro.estado === 'NO_LLEGO'">
+            <strong>Inasistencia registrada</strong>
+          </p>
+
+          <p *ngIf="cobro.estado === 'COBRADO'">
+            Monto registrado:
+            {{ cobro.monto | currency:'GTQ':'Q':'1.2-2' }}
+          </p>
+
+          <p *ngIf="cobro.estado === 'NO_LLEGO'">
+            Monto registrado: Q0.00
+          </p>
+
+          <p *ngIf="cobro.foto_url">
+            Evidencia fotográfica guardada.
+          </p>
+
+          <p *ngIf="cobro.observacion">
+            Observación: {{ cobro.observacion }}
+          </p>
+        </div>
+           <div
+          *ngIf="!cobrosPorPuesto[puesto.id]"
+          class="formulario-cobro">
+
+          <!-- BLOQUE DE FOTOGRAFÍA CON BOTÓN TÁCTIL -->
+          <div class="bloque-camara">
+            <label class="etiqueta-camara">
+              Fotografía del puesto
+              <span class="ayuda">Obligatoria si el vendedor no llegó.</span>
+            </label>
+
+            <!-- Input nativo oculto con cámara trasera forzada -->
+            <input
+              #inputFoto
+              [id]="'foto-' + puesto.id"
+              type="file"
+              accept="image/*"
+              capture="environment"
+              style="display: none;"
+              (change)="seleccionarFotografia(puesto.id, $event)">
+
+            <!-- Botón interactivo que acciona el input -->
+            <div class="fila-accion-camara">
+              <button
+                type="button"
+                class="btn-capturar-foto"
+                [class.foto-tomada]="!!fotografias[puesto.id]"
+                (click)="inputFoto.click()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                  <circle cx="12" cy="13" r="4"></circle>
+                </svg>
+                <span>{{ fotografias[puesto.id] ? 'Cambiar fotografía' : 'Tomar fotografía' }}</span>
+              </button>
+
+              <span *ngIf="fotografias[puesto.id]" class="badge-confirmacion">
+                ✓ Capturada
+              </span>
+            </div>
+
+            <small class="nombre-archivo-foto" *ngIf="fotografias[puesto.id]">
+              {{ fotografias[puesto.id]?.name }}
+            </small>
+          </div>
+
+          <!-- OBSERVACIÓN -->
+          <label [for]="'observacion-' + puesto.id">
+            Observación (opcional)
+          </label>
+
+          <textarea
+            [id]="'observacion-' + puesto.id"
+            [name]="'observacion-' + puesto.id"
+            rows="2"
+            maxlength="500"
+            placeholder="Escribe una observación..."
+            [(ngModel)]="observaciones[puesto.id]">
+          </textarea>
+
+          <p
+            class="error"
+            *ngIf="mensajesPuesto[puesto.id]">
+            {{ mensajesPuesto[puesto.id] }}
+          </p>
+
+          <div class="acciones">
+            <button
+              type="button"
+              class="btn-cobrar"
+              [disabled]="registrando[puesto.id]"
+              (click)="registrar(puesto, 'COBRADO')">
+              {{ registrando[puesto.id] ? 'Guardando...' : 'Registrar cobro' }}
+            </button>
+
+            <button
+              type="button"
+              class="btn-ausente"
+              [disabled]="registrando[puesto.id]"
+              (click)="registrar(puesto, 'NO_LLEGO')">
+              Registrar inasistencia
+            </button>
+          </div>
+        </div>
+        
+
+        <p
+          class="mensaje-exito"
+          *ngIf="mensajesPuesto[puesto.id] &&
+            cobrosPorPuesto[puesto.id]">
+
+          {{ mensajesPuesto[puesto.id] }}
+        </p>
+      </article>
+    </div>
+  </section>
+</main>

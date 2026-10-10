@@ -1,1 +1,91 @@
-/* You can add global styles to this file, and also import other style files */
+/* 1. Forzar color de texto negro legible en toda la app */
+body, html {
+  color: #111827 !important; /* Negro neutro elegante para textos principales */
+}
+
+/* 2. Variables de color institucional verde */
+:root {
+  --color-primario: #059669;        /* Verde esmeralda elegante */
+  --color-primario-hover: #047857;  /* Verde un poco más oscuro al pasar mouse */
+  --color-fondo-suave: #ecfdf5;     /* Verde claro sutil para fondos/badges */
+  --color-texto-negro: #111827;     /* Negro para títulos y cuerpos */
+  --color-texto-secundario: #374151;/* Gris carbón oscuro para subtítulos */
+}
+
+/* 1. Botón Principal (Idéntico a "Descargar PDF") */
+.btn-principal,
+button.primario,
+button[type="submit"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: #00875a; /* Verde institucional sólido de la captura */
+  color: #ffffff !important;
+  border: none;
+  outline: none;
+  padding: 9px 20px;
+  border-radius: 10px; /* Curvatura limpia como en la imagen */
+  font-size: 0.92rem;
+  font-weight: 700; /* Texto bien definido en blanco */
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(0, 135, 90, 0.28); /* Sombra suave inferior */
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    background-color: #006644;
+    box-shadow: 0 4px 12px rgba(0, 135, 90, 0.38);
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 135, 90, 0.2);
+  }
+
+  &:disabled {
+    background-color: #79d2b5 !important;
+    color: #f0fdf4 !important;
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+    opacity: 0.85;
+  }
+}
+
+/* 2. Botón Secundario / Cancelar (Mantiene la forma y armoniza en blanco/gris) */
+.btn-secundario,
+button.secundario {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: #ffffff;
+  color: #111827 !important;
+  border: 1px solid #d1d5db;
+  outline: none;
+  padding: 9px 18px;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    background-color: #f9fafb;
+    border-color: #9ca3af;
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}

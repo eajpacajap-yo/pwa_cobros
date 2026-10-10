@@ -1,0 +1,152 @@
+<div class="modulo-reportes">
+  <!-- BARRA DE ACCIÓN SUPERIOR: FECHA A LA IZQUIERDA, DESCARGA A LA DERECHA -->
+  <header class="barra-acciones">
+    <div class="selector-grupo">
+      <label for="diaSelect">Día de plaza:</label>
+      <div class="select-envoltorio">
+        <select id="diaSelect" [(ngModel)]="diaSeleccionadoId" (change)="alCambiarDia()">
+          <option *ngFor="let dia of diasPlaza" [ngValue]="dia.id">
+            {{ formatearFecha(dia.fecha) }}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      class="btn-descargar"
+      (click)="descargarPDF()"
+      [disabled]="cobros.length === 0 || generandoPdf">
+      <svg *ngIf="!generandoPdf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="12" y1="18" x2="12" y2="12"></line>
+        <line x1="9" y1="15" x2="15" y2="15"></line>
+      </svg>
+      <svg *ngIf="generandoPdf" class="spinner" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" opacity="0.25"></circle>
+        <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+      </svg>
+      <span>{{ generandoPdf ? 'Generando...' : 'Descargar PDF' }}</span>
+    </button>
+  </header>
+
+  <p *ngIf="error" class="alerta error">{{ error }}</p>
+
+  <!-- TARJETAS DE RESUMEN ELEGANTE -->
+  <section class="grid-metricas">
+    <article class="tarjeta-metrica destacada">
+      <div class="metrica-cabecera">
+        <span class="titulo">TOTAL RECAUDADO</span>
+        
+      </div>
+      <strong class="valor">{{ resumen.totalRecaudado | currency:'GTQ':'Q':'1.2-2' }}</strong>
+      <span class="subtexto">Ingreso consolidado del día</span>
+    </article>
+
+    <article class="tarjeta-metrica">
+      <div class="metrica-cabecera">
+        <span class="titulo">COBRADOS CON ÉXITO</span>
+        
+      </div>
+      <strong class="valor">{{ resumen.totalCobrados }}</strong>
+      <span class="subtexto">Puestos solventes</span>
+    </article>
+
+    <article class="tarjeta-metrica">
+      <div class="metrica-cabecera">
+        <span class="titulo">INASISTENCIAS</span>
+        
+      </div>
+      <strong class="valor">{{ resumen.totalNoLlego }}</strong>
+      <span class="subtexto">Puestos sin vendedor</span>
+    </article>
+
+    <article class="tarjeta-metrica">
+      <div class="metrica-cabecera">
+        <span class="titulo">TOTAL EVALUADOS</span>
+        
+      </div>
+      <strong class="valor">{{ resumen.totalRegistros }}</strong>
+      <span class="subtexto">Puestos supervisados</span>
+    </article>
+  </section>
+
+  <!-- TABLA DE DETALLE -->
+  <section class="tarjeta-tabla">
+    <div class="encabezado-tabla">
+      <h2>Detalle de puestos</h2>
+      <span class="badge-conteo">{{ cobros.length }} registros</span>
+    </div>
+
+    <div *ngIf="cargandoReporte" class="cargando-aviso">
+      Cargando cobros del día...
+    </div>
+
+    <div class="tabla-contenedor" *ngIf="!cargandoReporte">
+      <table>
+        <thead>
+          <tr>
+            <th>PUESTO</th>
+            <th>VENDEDOR</th>
+            <th>TIPO</th>
+            <th>COBRADOR</th>
+            <th class="texto-centro">ESTADO</th>
+            <th class="texto-derecha">MONTO</th>
+            <th class="texto-centro">EVIDENCIA</th>
+            <th>OBSERVACIÓN</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let cobro of cobros">
+            <td><strong class="puesto-id">Puesto {{ cobro.puesto_numero }}</strong></td>
+            <td>{{ cobro.vendedor }}</td>
+            <td><span class="tipo-tag">{{ cobro.tipo_puesto }}</span></td>
+            <td>{{ cobro.cobrador }}</td>
+            <td class="texto-centro">
+              <span
+                class="badge-estado"
+                [class.cobrado]="cobro.estado === 'COBRADO'"
+                [class.no-llego]="cobro.estado === 'NO_LLEGO'">
+                {{ cobro.estado === 'COBRADO' ? 'Cobrado' : 'No llegó' }}
+              </span>
+            </td>
+            <td class="texto-derecha monto">
+              <strong>{{ cobro.monto | currency:'GTQ':'Q':'1.2-2' }}</strong>
+            </td>
+            <td class="texto-centro">
+              <button
+                *ngIf="cobro.foto_url"
+                type="button"
+                class="btn-ver-foto"
+                (click)="abrirEvidencia(cobro)">
+                 Ver foto
+              </button>
+              <span *ngIf="!cobro.foto_url" class="vacio-guion">—</span>
+            </td>
+            <td class="col-observacion">{{ cobro.observacion || '—' }}</td>
+          </tr>
+
+          <tr *ngIf="cobros.length === 0">
+            <td colspan="8" class="sin-datos">
+              No hay cobros registrados en este día de plaza.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<!-- MODAL DE EVIDENCIA -->
+<div class="modal-fondo" *ngIf="fotoSeleccionadaUrl" (click)="cerrarModalEvidencia()">
+  <div class="modal-tarjeta" (click)="$event.stopPropagation()">
+    <header class="modal-top">
+      <h3>Evidencia — Puesto {{ puestoSeleccionadoNumero }}</h3>
+      <button type="button" class="btn-cerrar-modal" (click)="cerrarModalEvidencia()">✕</button>
+    </header>
+    <div class="modal-imagen-caja">
+      <img [src]="fotoSeleccionadaUrl" alt="Puesto vacío">
+    </div>
+  </div>
+</div>

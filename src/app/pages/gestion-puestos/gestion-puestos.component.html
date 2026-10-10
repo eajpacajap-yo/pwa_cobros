@@ -1,0 +1,293 @@
+<main class="pagina">
+  <nav class="pestanas">
+    <button
+      type="button"
+      [class.seleccionada]="seccion === 'puestos'"
+      (click)="seccion = 'puestos'">
+      Puestos
+    </button>
+
+    <button
+      type="button"
+      [class.seleccionada]="seccion === 'tipos'"
+      (click)="seccion = 'tipos'">
+      Tipos y tarifas
+    </button>
+  </nav>
+
+  <p *ngIf="error" class="alerta error">{{ error }}</p>
+  <p *ngIf="mensaje" class="alerta exito">{{ mensaje }}</p>
+  <p *ngIf="cargando">Cargando información...</p>
+
+  <ng-container *ngIf="!cargando">
+
+    <!-- SECCIÓN DE PUESTOS -->
+    <section *ngIf="seccion === 'puestos'" class="contenido">
+      <article class="tarjeta">
+        <h2>{{ idPuestoEditando !== null ? 'Editar puesto' : 'Registrar puesto' }}</h2>
+
+        <form (ngSubmit)="guardarPuesto()">
+          <div class="campos">
+            <div class="campo">
+              <label for="numero">Número de puesto *</label>
+              <input
+                id="numero"
+                name="numero"
+                [(ngModel)]="puestoForm.numero"
+                required
+                maxlength="30"
+                placeholder="Ej. 01">
+            </div>
+
+            <div class="campo">
+              <label for="vendedor">Vendedor *</label>
+              <select
+                id="vendedor"
+                name="vendedor"
+                [(ngModel)]="puestoForm.vendedor_id"
+                required>
+                <option [ngValue]="0">Seleccionar vendedor</option>
+                <option
+                  *ngFor="let vendedor of vendedores"
+                  [ngValue]="vendedor.id">
+                  {{ vendedor.primer_nombre }}
+                  {{ vendedor.primer_apellido }}
+                </option>
+              </select>
+            </div>
+
+            <div class="campo">
+              <label for="tipo">Tipo de puesto *</label>
+              <select
+                id="tipo"
+                name="tipo"
+                [(ngModel)]="puestoForm.tipo_puesto_id"
+                required>
+                <option [ngValue]="0">Seleccionar tipo</option>
+                <option
+                  *ngFor="let tipo of tipos"
+                  [ngValue]="tipo.id"
+                  [disabled]="!tipo.activo">
+                  {{ tipo.nombre }} — {{ tipo.precio | currency:'GTQ':'Q':'1.2-2' }}
+                  {{ !tipo.activo ? '(Inactivo)' : '' }}
+                </option>
+              </select>
+            </div>
+
+            <!-- En el formulario de registro/edición de puesto -->
+<div class="campo">
+  <label for="cobrador">Cobrador asignado</label>
+  <select
+    id="cobrador"
+    name="cobrador"
+    [(ngModel)]="puestoForm.cobrador_asignado_id">
+    <option value="">Sin asignar</option>
+    <option
+      *ngFor="let cobrador of cobradores"
+      [value]="cobrador.id">
+      {{ cobrador.primer_nombre }} {{ cobrador.primer_apellido }}
+    </option>
+  </select>
+  <small>Selecciona el cobrador asignado a este puesto.</small>
+</div>
+
+            <div class="campo campo-completo">
+              <label for="descripcion">Descripción</label>
+              <textarea
+                id="descripcion"
+                name="descripcion"
+                rows="2"
+                maxlength="300"
+                [(ngModel)]="puestoForm.descripcion"
+                placeholder="Ej. Puesto de venta de alimentos">
+              </textarea>
+            </div>
+
+            <div class="campo campo-completo">
+              <label class="check">
+                <input
+                  type="checkbox"
+                  name="puestoActivo"
+                  [(ngModel)]="puestoForm.activo">
+                Puesto activo
+              </label>
+            </div>
+          </div>
+
+          <div class="acciones">
+            <button type="submit" class="primario" [disabled]="guardando">
+              {{ guardando ? 'Guardando...' :
+                 idPuestoEditando !== null ? 'Guardar cambios' : 'Registrar puesto' }}
+            </button>
+
+            <button
+              type="button"
+              class="secundario"
+              *ngIf="idPuestoEditando !== null"
+              (click)="cancelarPuesto()">
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </article>
+
+      <article class="tarjeta">
+        <div class="titulo-listado">
+          <h2>Puestos registrados</h2>
+          <button type="button" class="secundario" (click)="cargarDatos()">
+            Actualizar
+          </button>
+        </div>
+
+        <div class="tabla-contenedor">
+          <table>
+            <thead>
+              <tr>
+                <th>Número</th>
+                <th>Vendedor</th>
+                <th>Tipo</th>
+                <th>Cobrador</th>
+                <th>Estado</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let puesto of puestos">
+                <td>{{ puesto.numero }}</td>
+                <td>{{ nombreVendedor(puesto.vendedor_id) }}</td>
+                <td>{{ nombreTipo(puesto.tipo_puesto_id) }}</td>
+                <td class="uuid">{{ nombreCobrador(puesto.cobrador_asignado_id) }}</td>
+                <td>
+                  <span class="estado" [class.inactivo]="!puesto.activo">
+                    {{ puesto.activo ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    class="editar"
+                    (click)="editarPuesto(puesto)">
+                    Editar
+                  </button>
+                </td>
+              </tr>
+
+              <tr *ngIf="puestos.length === 0">
+                <td colspan="6">No hay puestos registrados.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <!-- SECCIÓN DE TIPOS DE PUESTO -->
+    <section *ngIf="seccion === 'tipos'" class="contenido">
+      <article class="tarjeta">
+        <h2>{{ idTipoEditando !== null ? 'Editar tipo de puesto' : 'Crear tipo de puesto' }}</h2>
+
+        <form (ngSubmit)="guardarTipo()">
+          <div class="campos">
+            <div class="campo">
+              <label for="nombreTipo">Nombre *</label>
+              <input
+                id="nombreTipo"
+                name="nombreTipo"
+                [(ngModel)]="tipoForm.nombre"
+                required
+                maxlength="100"
+                placeholder="Ej. Pequeño">
+            </div>
+
+            <div class="campo">
+              <label for="precio">Precio (Q) *</label>
+              <input
+                id="precio"
+                name="precio"
+                type="number"
+                min="0"
+                step="0.01"
+                [(ngModel)]="tipoForm.precio"
+                required>
+            </div>
+
+            <div class="campo campo-completo">
+              <label for="descripcionTipo">Descripción</label>
+              <textarea
+                id="descripcionTipo"
+                name="descripcionTipo"
+                rows="2"
+                maxlength="300"
+                [(ngModel)]="tipoForm.descripcion">
+              </textarea>
+            </div>
+
+            <div class="campo campo-completo">
+              <label class="check">
+                <input
+                  type="checkbox"
+                  name="tipoActivo"
+                  [(ngModel)]="tipoForm.activo">
+                Tipo activo
+              </label>
+            </div>
+          </div>
+
+          <div class="acciones">
+            <button type="submit" class="primario" [disabled]="guardando">
+              {{ guardando ? 'Guardando...' :
+                 idTipoEditando !== null ? 'Guardar cambios' : 'Crear tipo' }}
+            </button>
+
+            <button
+              type="button"
+              class="secundario"
+              *ngIf="idTipoEditando !== null"
+              (click)="cancelarTipo()">
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </article>
+
+      <article class="tarjeta">
+        <h2>Tipos y tarifas registrados</h2>
+
+        <div class="tabla-contenedor">
+          <table>
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Tarifa</th>
+                <th>Estado</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let tipo of tipos">
+                <td>{{ tipo.nombre }}</td>
+                <td>{{ tipo.descripcion || '—' }}</td>
+                <td>{{ tipo.precio | currency:'GTQ':'Q':'1.2-2' }}</td>
+                <td>
+                  <span class="estado" [class.inactivo]="!tipo.activo">
+                    {{ tipo.activo ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
+                <td>
+                  <button type="button" class="editar" (click)="editarTipo(tipo)">
+                    Editar
+                  </button>
+                </td>
+              </tr>
+
+              <tr *ngIf="tipos.length === 0">
+                <td colspan="5">No hay tipos de puesto registrados.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  </ng-container>
+</main>

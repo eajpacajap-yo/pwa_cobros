@@ -1,0 +1,281 @@
+<main class="admin">
+  <!-- ENCABEZADO COMPACTO -->
+  <header class="encabezado-compacto">
+    <div class="identidad">
+      <span class="etiqueta-marca"> Panel de administración, PLAZA LLANOS DEL PINAL</span>
+    </div>
+
+    <button
+      type="button"
+      class="btn-cerrar-sesion"
+      (click)="cerrarSesion()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+        <polyline points="16 17 21 12 16 7"></polyline>
+        <line x1="21" y1="12" x2="9" y2="12"></line>
+      </svg>
+      <span>Cerrar sesión</span>
+    </button>
+  </header>
+
+  <!-- BARRA DE NAVEGACIÓN -->
+  <nav class="barra-navegacion" aria-label="Navegación principal del administrador">
+    <div class="contenedor-pestanas">
+      <button
+        type="button"
+        class="item-nav"
+        [class.activo]="seccionActiva === 'vendedores'"
+        (click)="cambiarSeccion('vendedores')">
+        Vendedores
+      </button>
+
+      <button
+        type="button"
+        class="item-nav"
+        [class.activo]="seccionActiva === 'puestos'"
+        (click)="cambiarSeccion('puestos')">
+        Puestos y tarifas
+      </button>
+
+      <button
+        type="button"
+        class="item-nav"
+        [class.activo]="seccionActiva === 'dias'"
+        (click)="cambiarSeccion('dias')">
+        Días de plaza
+      </button>
+
+      <button
+        type="button"
+        class="item-nav"
+        [class.activo]="seccionActiva === 'cobradores'"
+        (click)="cambiarSeccion('cobradores')">
+        Cobradores
+      </button>
+
+      <button
+        type="button"
+        class="item-nav"
+        [class.activo]="seccionActiva === 'reportes'"
+        (click)="cambiarSeccion('reportes')">
+        Reportes
+      </button>
+    </div>
+  </nav>
+
+  <!-- 1. PESTAÑA: VENDEDORES -->
+  <section *ngIf="seccionActiva === 'vendedores'" id="vendedores" class="contenido">
+    <div class="titulo-seccion">
+      <div>
+        <p>Registra, consulta, edita y desactiva vendedores.</p>
+      </div>
+
+      <span class="contador">
+        {{ vendedores.length }} registrados
+      </span>
+    </div>
+
+    <p *ngIf="mensaje" class="alerta exito">{{ mensaje }}</p>
+    <p *ngIf="error" class="alerta error">{{ error }}</p>
+
+    <section class="tarjeta formulario">
+      <h3>
+        {{ idEditando !== null ? 'Editar vendedor' : 'Registrar vendedor' }}
+      </h3>
+
+      <form (ngSubmit)="guardar()">
+        <div class="campos">
+          <div class="campo">
+            <label for="primerNombre">Primer nombre *</label>
+            <input
+              id="primerNombre"
+              name="primerNombre"
+              [(ngModel)]="formulario.primer_nombre"
+              required
+              maxlength="100">
+          </div>
+
+          <div class="campo">
+            <label for="segundoNombre">Segundo nombre</label>
+            <input
+              id="segundoNombre"
+              name="segundoNombre"
+              [(ngModel)]="formulario.segundo_nombre"
+              maxlength="100">
+          </div>
+
+          <div class="campo">
+            <label for="primerApellido">Primer apellido *</label>
+            <input
+              id="primerApellido"
+              name="primerApellido"
+              [(ngModel)]="formulario.primer_apellido"
+              required
+              maxlength="100">
+          </div>
+
+          <div class="campo">
+            <label for="segundoApellido">Segundo apellido</label>
+            <input
+              id="segundoApellido"
+              name="segundoApellido"
+              [(ngModel)]="formulario.segundo_apellido"
+              maxlength="100">
+          </div>
+
+          <div class="campo">
+            <label for="telefono">Teléfono</label>
+            <input
+              id="telefono"
+              name="telefono"
+              [(ngModel)]="formulario.telefono"
+              type="tel"
+              maxlength="30">
+          </div>
+
+          <div class="campo">
+            <label for="identificacion">Identificación</label>
+            <input
+              id="identificacion"
+              name="identificacion"
+              [(ngModel)]="formulario.identificacion"
+              maxlength="50">
+          </div>
+        </div>
+
+        <div class="acciones-formulario">
+          <button
+            type="submit"
+            class="btn-principal"
+            [disabled]="guardando">
+            {{ guardando
+              ? 'Guardando...'
+              : idEditando !== null
+                ? 'Guardar cambios'
+                : 'Registrar vendedor' }}
+          </button>
+
+          <button
+            *ngIf="idEditando !== null"
+            type="button"
+            class="btn-secundario"
+            (click)="cancelarEdicion()"
+            [disabled]="guardando">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <section class="tarjeta listado">
+      <div class="herramientas">
+        <input
+          type="search"
+          aria-label="Buscar vendedores"
+          placeholder="Buscar por nombre, teléfono o identificación..."
+          [(ngModel)]="filtro"
+          name="filtro">
+
+        <label class="filtro-inactivos">
+          <input
+            type="checkbox"
+            [(ngModel)]="mostrarInactivos"
+            name="mostrarInactivos">
+          Mostrar inactivos
+        </label>
+
+        <button
+          type="button"
+          class="btn-secundario"
+          (click)="cargarVendedores()"
+          [disabled]="buscando">
+          Actualizar
+        </button>
+      </div>
+
+      <p *ngIf="buscando">Cargando vendedores...</p>
+
+      <div class="tabla-contenedor" *ngIf="!buscando">
+        <table>
+          <thead>
+            <tr>
+              <th>Vendedor</th>
+              <th>Teléfono</th>
+              <th>Identificación</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let vendedor of vendedoresFiltrados">
+              <td>
+                <strong>
+                  {{ vendedor.primer_nombre }}
+                  {{ vendedor.segundo_nombre || '' }}
+                  {{ vendedor.primer_apellido }}
+                  {{ vendedor.segundo_apellido || '' }}
+                </strong>
+              </td>
+
+              <td>{{ vendedor.telefono || '—' }}</td>
+              <td>{{ vendedor.identificacion || '—' }}</td>
+
+              <td>
+                <span
+                  class="estado"
+                  [class.activo]="vendedor.activo"
+                  [class.inactivo]="!vendedor.activo">
+                  {{ vendedor.activo ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+
+              <td>
+                <div class="acciones-tabla">
+                  <button
+                    type="button"
+                    class="btn-editar"
+                    (click)="editar(vendedor)">
+                    Editar
+                  </button>
+
+                  <button
+                    type="button"
+                    class="btn-estado"
+                    (click)="cambiarEstado(vendedor)">
+                    {{ vendedor.activo ? 'Desactivar' : 'Activar' }}
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <tr *ngIf="vendedoresFiltrados.length === 0">
+              <td colspan="5" class="vacio">
+                No se encontraron vendedores.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </section>
+
+  <!-- 2. PESTAÑA: PUESTOS Y TARIFAS -->
+  <section *ngIf="seccionActiva === 'puestos'" class="contenido">
+    <app-gestion-puestos></app-gestion-puestos>
+  </section>
+
+  <!-- 3. PESTAÑA: DÍAS DE PLAZA -->
+  <section *ngIf="seccionActiva === 'dias'" class="contenido">
+    <app-dias-plaza></app-dias-plaza>
+  </section>
+
+  <!-- PESTAÑA: COBRADORES -->
+<section *ngIf="seccionActiva === 'cobradores'" class="contenido">
+  <app-gestion-cobradores></app-gestion-cobradores>
+</section>
+
+<section *ngIf="seccionActiva === 'reportes'" class="contenido">
+    <app-reportes></app-reportes>
+  </section>
+</main>

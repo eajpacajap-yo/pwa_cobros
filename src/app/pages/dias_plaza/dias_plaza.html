@@ -1,0 +1,112 @@
+<main class="pagina">
+ 
+
+  <p *ngIf="error" class="alerta error">{{ error }}</p>
+  <p *ngIf="mensaje" class="alerta exito">{{ mensaje }}</p>
+
+  <section class="contenido">
+    <!-- FORMULARIO -->
+    <article class="tarjeta">
+      <h2>{{ idEditando !== null ? 'Editar día de plaza' : 'Registrar nuevo día de plaza' }}</h2>
+
+      <form (ngSubmit)="guardar()">
+        <div class="campos">
+          <div class="campo">
+            <label for="fecha">Fecha del día de plaza *</label>
+            <input
+              id="fecha"
+              name="fecha"
+              type="date"
+              [(ngModel)]="formulario.fecha"
+              required>
+          </div>
+
+          <div class="campo">
+            <label for="descripcion">Descripción / Motivo</label>
+            <input
+              id="descripcion"
+              name="descripcion"
+              type="text"
+              maxlength="150"
+              placeholder="Ej. Mercado dominical, Día de feria"
+              [(ngModel)]="formulario.descripcion">
+          </div>
+
+          <div class="campo campo-completo">
+            <label class="check">
+              <input
+                type="checkbox"
+                name="activo"
+                [(ngModel)]="formulario.activo">
+              Día activo (visible para cobradores)
+            </label>
+          </div>
+        </div>
+
+        <div class="acciones">
+          <button type="submit" class="primario" [disabled]="guardando">
+            {{ guardando ? 'Guardando...' : idEditando !== null ? 'Guardar cambios' : 'Registrar día' }}
+          </button>
+
+          <button
+            type="button"
+            class="secundario"
+            *ngIf="idEditando !== null"
+            (click)="cancelarEdicion()">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </article>
+
+    <!-- LISTADO -->
+    <article class="tarjeta">
+      <div class="titulo-listado">
+        <h2>Días registrados</h2>
+        <button type="button" class="secundario" (click)="cargarDias()" [disabled]="cargando">
+          Actualizar
+        </button>
+      </div>
+
+      <p *ngIf="cargando">Cargando días de plaza...</p>
+
+      <div class="tabla-contenedor" *ngIf="!cargando">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Descripción</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let dia of dias">
+              <td><strong>{{ formatearFecha(dia.fecha) }}</strong></td>
+              <td>{{ dia.descripcion || '—' }}</td>
+              <td>
+                <span class="estado" [class.inactivo]="!dia.activo">
+                  {{ dia.activo ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td>
+                <div class="acciones-tabla">
+                  <button type="button" class="editar" (click)="editar(dia)">
+                    Editar
+                  </button>
+                  <button type="button" class="estado-btn" (click)="cambiarEstado(dia)">
+                    {{ dia.activo ? 'Desactivar' : 'Activar' }}
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <tr *ngIf="dias.length === 0">
+              <td colspan="4">No hay días de plaza registrados.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+  </section>
+</main>
